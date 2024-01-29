@@ -4,18 +4,18 @@
 //
 //  Created by mervemetinoglu on 2.01.2024.
 //
+// TODO: rename the model and view model
 
 import SwiftUI
 
 struct EmojiMemoryGameView: View {
     @ObservedObject var viewModel: EmojiMemoryGame
 
+    private let aspectRatio: CGFloat = 2 / 3
+
     var body: some View {
         VStack {
-            ScrollView {
-                cards
-                    .animation(.default, value: viewModel.cards)
-            }
+            cards.animation(.default, value: viewModel.cards)
             Button("Shuffle") {
                 viewModel.shuffle()
             }
@@ -23,27 +23,20 @@ struct EmojiMemoryGameView: View {
         .padding()
     }
 
-    var cards: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 85), spacing: 0)], spacing: 0) {
-            ForEach(viewModel.cards) { card in
-                CardView(card)
-                    .aspectRatio(2 / 3, contentMode: .fit)
-                    .padding(4)
-                    .onTapGesture {
-                        viewModel.choose(card)
-                    }
-            }
+    private var cards: some View {
+        AspectVGrid(viewModel.cards, aspectRatio: aspectRatio) { card in
+            CardView(card: card)
+                .padding(4)
+                .onTapGesture {
+                    viewModel.choose(card)
+                }
         }
         .foregroundColor(.red)
     }
 }
 
 struct CardView: View {
-    var card: MemoryGame<String>.Card
-
-    init(_ card: MemoryGame<String>.Card) {
-        self.card = card
-    }
+    let card: EmojiMemoryGame.Card
 
     var body: some View {
         ZStack {
@@ -56,9 +49,10 @@ struct CardView: View {
                     .minimumScaleFactor(0.01)
                     .aspectRatio(1, contentMode: .fit)
             }
-            .opacity(card.isFaceUp ? 1 : 1)
+            .opacity(card.isFaceUp ? 1 : 0)
             base.fill().opacity(card.isFaceUp ? 0 : 1)
         }
+        .opacity(card.isFaceUp || !card.isMatched ? 1 : 0)
     }
 }
 
